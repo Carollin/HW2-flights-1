@@ -1,0 +1,80 @@
+---
+title: "flights hw"
+author: "Chenyi Lin"
+date: "2/11/2021"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+CHAPTER 5 data transformation
+```{r}
+library(nycflights13)
+library('tidyverse')
+library(tibble)
+```
+```{r}
+flights
+```
+```{r}
+dec25<-filter(flights, month ==1, day == 25)
+dec25
+```
+```{r}
+sum(is.na(flights$dep_time))
+```
+1. There is 8255 missing data in dep_time.
+```{r}
+sum(is.na(flights$dep_delay))
+```
+
+```{r}
+sum(is.na(flights$arr_time))
+```
+```{r}
+sum(is.na(flights$arr_delay))
+```
+
+```{r}
+sum(is.na(flights$tailnum))
+```
+```{r}
+sum(is.na(flights$air_time))
+```
+2. There are many missing data in arr_time, arr_delay,dep_delay,tailnum, air_time. 
+
+
+```{r}
+newdep_time = (floor(flights$dep_time/100)*60)+(flights$dep_time %%100)
+
+```
+
+```{r}
+newflights <- flights[,!(colnames(flights) %in% c("dep_time"))]
+newflights
+
+```
+```{r}
+add_column(newflights, newdep_time = newdep_time,.after = 3)
+```
+```{r}
+b <- flights %>% group_by(month,day) %>% summarize(mean(dep_delay,na.rm = T),.groups = "drop")
+b
+```
+
+```{r}
+a <- flights %>% 
+  group_by(month,day) %>% 
+  summarise(mean(is.na(dep_time)),.groups = "drop")
+c <- add_column(b,avgdep_time = a$`mean(is.na(dep_time))`,.after = 3)
+
+c <- rename(c,avgdelay_time=`mean(dep_delay, na.rm = T)`)
+c
+```
+```{r}
+ggplot(c,aes(x=avgdelay_time,y=avgdep_time))+
+  geom_point()
+```
+3.  
+By looking at the plot of average delay time and averge dep time. we can find that when the delay time is longer, the number of cancelled flights are larger. That may because the weather or other reasons. However, there are also many points show that teher is no obvious realtion between two factors.
